@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-   "github.com/aws/aws-sdk-go/service/ec2"
-   "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"os"
 	"os/exec"
 	"time"
@@ -239,7 +239,7 @@ func putfile(name string, keyname string, src string, dst string) {
 	args = append(args, keyfile)
 
 	args = append(args, src)
-	args = append(args, "ec2-user@" + host + ":" + dst)
+	args = append(args, "ec2-user@"+host+":"+dst)
 
 	if verbose {
 		fmt.Print("[scp")
@@ -275,7 +275,7 @@ func getfile(name string, keyname string, src string, dst string) {
 	args = append(args, "-i")
 	args = append(args, keyfile)
 
-	args = append(args, "ec2-user@" + host + ":" + src)
+	args = append(args, "ec2-user@"+host+":"+src)
 	args = append(args, dst)
 
 	if verbose {
@@ -296,7 +296,7 @@ func getfile(name string, keyname string, src string, dst string) {
 	os.Exit(0)
 }
 
-func execRemoteCommand(name string, keyname string, cmd ...string) (string, error) {
+func execRemoteCommand(name string, keyname string, remoteCommand ...string) (string, error) {
 	inst, err := findInstance(name)
 	if err != nil {
 		return "", err
@@ -305,31 +305,33 @@ func execRemoteCommand(name string, keyname string, cmd ...string) (string, erro
 		return "", fmt.Errorf("Instance not found: %s", name)
 	}
 	host := *inst.PublicIpAddress
+	cmd := "ssh"
 	args := make([]string, 0)
+	keyfile := os.Getenv("HOME") + "/.ssh/" + keyname + ".pem"
+	args = append(args, "-t")
 	args = append(args, "-o")
 	args = append(args, "StrictHostKeyChecking=no")
 
-	keyfile := os.Getenv("HOME") + "/.ssh/" + keyname + ".pem"
 	args = append(args, "-i")
 	args = append(args, keyfile)
 
-	args = append(args, "ec2-user@" + host)
+	args = append(args, "ec2-user@"+host)
 
-	if len(cmd) == 0 {
+	if len(remoteCommand) == 0 {
 		args = append(args, "hostname")
 	} else {
-		for _, s := range cmd {
+		for _, s := range remoteCommand {
 			args = append(args, s)
 		}
 	}
 	if verbose {
-		fmt.Print("[ssh")
+		fmt.Print("[" + cmd)
 		for _, s := range args {
 			fmt.Printf(" %s", s)
 		}
 		fmt.Println("]")
 	}
-	out, err := exec.Command("ssh", args...).Output()
+	out, err := exec.Command(cmd, args...).Output()
 	if err != nil {
 		return "", err
 	}
@@ -389,7 +391,7 @@ func launchInstance(name string, keyname string, instanceImage string, instanceT
 	instanceId := inst.InstanceId
 	_, err = client.CreateTags(&ec2.CreateTagsInput{
 		Resources: []*string{instanceId},
-		Tags: []*ec2.Tag{&ec2.Tag{Key: aws.String("Name"), Value: aws.String(name)}},
+		Tags:      []*ec2.Tag{&ec2.Tag{Key: aws.String("Name"), Value: aws.String(name)}},
 	})
 	if err != nil {
 		return nil, err

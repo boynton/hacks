@@ -4,6 +4,10 @@ EC2=$(GOPATH)/bin/ec2
 
 all: $(EC2)
 
+check::
+	go fmt $(REPO)/ec2
+	go vet $(REPO)/ec2
+
 clean::
 	rm -f *~ $(EC2)
 
