@@ -2,3 +2,7 @@
 _*
 
 .#*
+
+*.tfstate
+
+*.backup
