@@ -1,10 +1,13 @@
 CMDS=ec2-cluster
 REPO=github.com/boynton/hacks
 EC2=$(GOPATH)/bin/ec2
+VPC=$(GOPATH)/bin/vpc
 
-all: $(EC2)
+all: $(EC2) $(VPC)
 
 check::
+	go fmt $(REPO)/vpc
+	go vet $(REPO)/vpc
 	go fmt $(REPO)/ec2
 	go vet $(REPO)/ec2
 
@@ -13,3 +16,6 @@ clean::
 
 $(EC2): ec2/ec2.go
 	go install $(REPO)/ec2
+
+$(VPC): vpc/vpc.go vpc/util.go
+	go install $(REPO)/vpc

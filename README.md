@@ -1,6 +1,23 @@
 # hacks
 Little AWS hacks, probably not what you are looking for.
 
+## vpc
+
+A little wrapper to manage multiple Virtual Private Clouds (Networks) from another VPC (the 'admin' Network)
+through a bastion host.
+
+```
+vpc setup # sets up the admin network in a default 'dev' environment on AWS (use -e option to override the default)
+vpc create myapp 10.0.0.0/24 # creates a VPC in the environment that is managed from the admin network
+vpc create-zone myapp fe 10.0.0.0/28 # creates a zone (subnet) in the network
+vpc -i ami-81f7e8b1 -t t1.micro -k ec2-user run-instance webserver dev.testapp.fe # run an instance in the fe zone
+vpc machines # list the machines, let's assume that the jumphost is i-639367b9 and the webserver is i-16fc08cc
+vpc ssh i-639367b9 hostname # runs the 'hostname' on the jumphost.
+vpc ssh i-16fc08cc hostname # runs the 'hostname' on the webserver by going through the jumphost.
+vpc describe # describes minimal info about the networks and machines
+vpc cleanup # stops instances and cleans up, deleting all resources in the environment
+```
+
 ## ec2
 
 A little wrapper to manage a single ec2 instance by name, makes writing shell scripts easier. 
