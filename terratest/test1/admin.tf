@@ -20,6 +20,7 @@ resource "aws_security_group" "bastion" {
     Network = "${var.env}.admin"
     Env = "${var.env}"
   }
+  vpc_id = "${aws_vpc.admin.id}"
   
   # SSH access from the controlling network
   ingress {
@@ -27,6 +28,12 @@ resource "aws_security_group" "bastion" {
     to_port = 22
     protocol = "tcp"
     cidr_blocks = ["${var.ctrl_network}"]
+  }
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
 }
@@ -47,6 +54,21 @@ resource "aws_instance" "jumphost" {
     Network = "${var.env}.admin"
     Env = "${var.env}"
   }
+  instance_type = "t1.micro"
+  ami = "${lookup(var.amis, var.region)}"
+  key_name = "${var.admin_key_name}"
+  subnet_id = "${aws_subnet.bastion.id}"
+  vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
+}
+
+resource "aws_eip" "jumphost_ip" {
+  instance = "${aws_instance.jumphost.id}"
+  vpc = true
+
+/*
+  # This is broken. Some race in getting eip through gateway to running host with sshd running...the "host"
+  # in the ssh command ends up blank, so this never succeeds. Note that if the provisioner is in the instance,
+  # then it uses the instance's private-ip before the eip is even instantiated! which of course doesn't work.
 
   # The connection block tells our provisioner how to
   # communicate with the resource (instance)
@@ -55,28 +77,16 @@ resource "aws_instance" "jumphost" {
     key_file = "${var.admin_key_path}"
   }
 
-  instance_type = "t1.micro"
-
-  # Lookup the correct AMI based on the region
-  # we specified
-  ami = "${lookup(var.amis, var.region)}"
-
-  key_name = "${var.admin_key_name}"
-
-  subnet_id = "${aws_subnet.bastion.id}"
-#  security_groups = ["${aws_security_group.default.name}"]
-  security_groups = ["${aws_security_group.bastion.name}"]
-
   # We run a remote provisioner on the instance after creating it.
-  # In this case, we just install nginx and start it. By default,
-  # this should be on port 80
+  # This is in the Elastic IP, since we need that public IP to
+  # talk to it via SSH.
   provisioner "remote-exec" {
     inline = [
       "sudo apt-get -y update",
-#      "sudo apt-get -y install nginx",
-#      "sudo service nginx start"
     ]
   }
+*/
+
 }
 
 resource "aws_internet_gateway" "gateway" {
@@ -88,22 +98,8 @@ resource "aws_internet_gateway" "gateway" {
   vpc_id = "${aws_vpc.admin.id}"
 }
 
-resource "aws_eip" "jumphost_ip" {
-    instance = "${aws_instance.jumphost.id}"
-    vpc = true
+resource "aws_route" "gateway" {
+  route_table_id = "${aws_vpc.admin.main_route_table_id}"
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id = "${aws_internet_gateway.gateway.id}"
 }
-
-resource "aws_route_table" "r" {
-  vpc_id = "${aws_vpc.admin.id}"
-  route {
-      cidr_block = "0.0.0.0/0"
-      gateway_id = "${aws_internet_gateway.gateway.id}"
-  }
-  tags {
-    Name = "${var.env}.admin.routetable"
-    Network = "${var.env}.admin"
-    Env = "${var.env}"
-  }
-}
-
-

@@ -20,7 +20,7 @@ variable "admin_user" {
 
 variable "admin_key_name" {
    description = "Name of the SSH keypair to use in AWS."
-   default = "$(var.admin_user)"
+   default = "ec2-user"
 }
 
 variable "key_dir" {
@@ -29,12 +29,12 @@ variable "key_dir" {
 }
 
 variable "admin_key_path" {
-   default = "$(var.key_dir)/$(var.admin_key_name).pem"
+   default = "~/.ssh/ec2-user.pem"
 }
 
 variable "amis" {
     default = {
         us-east-1 = "ami-aa7ab6c2"
-        us-west-2 = "ami-f0091d91"
+        us-west-2 = "ami-81f7e8b1"
     }
 }
