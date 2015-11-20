@@ -4,7 +4,7 @@
 
 The admin network (VPC) is set up with a bastion subnet containing a jumphost instance.
 
-![admin resources](https://github.com/boynton/hacks/blob/master/terratest/admin.svg)
+![admin resources](https://raw.githubusercontent.com/boynton/hacks/master/terratest/admin.svg)
 
 ## test2 - Myapp
 
