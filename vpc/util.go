@@ -248,7 +248,7 @@ func (net *Network) createSecurityGroup(name string, descr string) (*string, err
 }
 
 func (cloud *Cloud) initAdminNetwork(net *Network, ctrlNetBlock string) error {
-	sgBastionId, err := net.createSecurityGroup("bastion", "Bastion security group for "+cloud.Name+"."+net.Name)
+	sgBastionId, err := net.createSecurityGroup("bastion", "Bastion security group for " + net.Name)
 	if err != nil {
 		return err
 	}
