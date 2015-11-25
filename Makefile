@@ -2,8 +2,9 @@ CMDS=ec2-cluster
 REPO=github.com/boynton/hacks
 EC2=$(GOPATH)/bin/ec2
 VPC=$(GOPATH)/bin/vpc
+CLOUD=$(GOPATH)/bin/cloud
 
-all: $(EC2) $(VPC)
+all: $(CLOUD) $(EC2) $(VPC)
 
 check::
 	go fmt $(REPO)/vpc
@@ -19,3 +20,6 @@ $(EC2): ec2/ec2.go
 
 $(VPC): vpc/vpc.go vpc/util.go
 	go install $(REPO)/vpc
+
+$(CLOUD): cloud/main.go cloud/cloud.go cloud/commands.go
+	go install $(REPO)/cloud
