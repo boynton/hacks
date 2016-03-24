@@ -1,10 +1,10 @@
-CMDS=ec2-cluster
 REPO=github.com/boynton/hacks
 EC2=$(GOPATH)/bin/ec2
 VPC=$(GOPATH)/bin/vpc
 CLOUD=$(GOPATH)/bin/cloud
+JSON=$(GOPATH)/bin/json
 
-all: $(CLOUD) $(EC2) $(VPC)
+all: $(CLOUD) $(EC2) $(VPC) $(JSON)
 
 check::
 	go fmt $(REPO)/vpc
@@ -23,3 +23,6 @@ $(VPC): vpc/vpc.go vpc/util.go
 
 $(CLOUD): cloud/main.go cloud/cloud.go cloud/commands.go
 	go install $(REPO)/cloud
+
+$(JSON): json/main.go
+	go install $(REPO)/json
